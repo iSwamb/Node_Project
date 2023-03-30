@@ -15,12 +15,19 @@ class Movie extends Model {
             releaseDate: {
                 type: DataTypes.DATE,
                 allowNull: false,
+                field: 'release_date',
             },
             director: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-        }, { sequelize, modelName: 'Movie' });
+        }, {
+            sequelize,
+            modelName: 'Movie',
+            timestamps: true,
+            createdAt: 'created_at',
+            updatedAt: 'updated_at',
+        });
     }
 
     static associate(models) {

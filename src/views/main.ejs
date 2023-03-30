@@ -8,26 +8,38 @@
 <body>
 <h1>Liste des films</h1>
 
-<div id="movies">
+<table id="movies" border="1">
+    <thead>
+    <tr>
+        <th>Titre</th>
+        <th>Description</th>
+        <th>Date de sortie</th>
+        <th>Réalisateur</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
     <% movies.forEach((movie) => { %>
-        <div class="movie" data-id="<%= movie.id %>">
-            <h2><%= movie.title %></h2>
-            <p><strong>Description :</strong> <%= movie.description %></p>
-            <p><strong>Date de sortie :</strong> <%= movie.releaseDate %></p>
-            <p><strong>Réalisateur :</strong> <%= movie.director %></p>
+        <tr class="movie" data-id="<%= movie.id %>">
+            <td><%= movie.title %></td>
+            <td><%= movie.description %></td>
+            <td><%= movie.releaseDate %></td>
+            <td><%= movie.director %></td>
+            <td>
+                <% if (user) { %>
+                    <button class="add-to-favorites">Ajouter aux favoris</button>
+                    <button class="remove-from-favorites">Retirer des favoris</button>
+                <% } %>
 
-            <% if (user) { %>
-                <button class="add-to-favorites">Ajouter aux favoris</button>
-                <button class="remove-from-favorites">Retirer des favoris</button>
-            <% } %>
-
-            <% if (user && user.isAdmin) { %>
-                <button class="edit-movie">Modifier</button>
-                <button class="delete-movie">Supprimer</button>
-            <% } %>
-        </div>
+                <% if (user && user.isAdmin) { %>
+                    <button class="edit-movie">Modifier</button>
+                    <button class="delete-movie">Supprimer</button>
+                <% } %>
+            </td>
+        </tr>
     <% }); %>
-</div>
+    </tbody>
+</table>
 
 <% if (user && user.isAdmin) { %>
     <h2>Ajouter un film</h2>
@@ -49,7 +61,141 @@
 <% } %>
 
 <script>
-    // Ici, vous pouvez ajouter du JavaScript pour gérer les actions sur les boutons et communiquer avec l'API.
+    // Sélectionnez tous les boutons et stockez-les dans des variables
+    const addToFavoritesButtons = document.querySelectorAll('.add-to-favorites');
+    const removeFromFavoritesButtons = document.querySelectorAll('.remove-from-favorites');
+    const editMovieButtons = document.querySelectorAll('.edit-movie');
+    const deleteMovieButtons = document.querySelectorAll('.delete-movie');
+
+    // Fonction pour ajouter un film aux favoris
+    function addToFavorites(movieId) {
+        // Remplacez cette URL par l'URL de votre API pour ajouter un film aux favoris
+        const url = `/main/favorites/${movieId}`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ movieId: movieId })
+        }).then(response => {
+            console.log(response);
+            if (response.ok) {
+                alert('Film ajouté aux favoris');
+            } else {
+                alert('Erreur lors de l\'ajout du film aux favoris');
+            }
+        }).catch(error => {
+            console.error('Erreur:', error);
+        });
+    }
+
+    // Ajoutez des écouteurs d'événements aux boutons "Ajouter aux favoris"
+    addToFavoritesButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const movieId = button.parentElement.parentElement.getAttribute('data-id');
+            addToFavorites(movieId);
+        });
+    });
+
+    // Fonction pour ajouter un film
+    function addMovie() {
+        // Remplacez cette URL par l'URL de votre API pour ajouter un film
+        const url = `/main`;
+
+        // Récupérez les informations du formulaire d'ajout de film
+        const title = document.querySelector('#title').value;
+        const description = document.querySelector('#description').value;
+        const releaseDate = document.querySelector('#releaseDate').value;
+        const director = document.querySelector('#director').value;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, description, releaseDate, director })
+        }).then(response => {
+            if (response.ok) {
+                alert('Film ajouté');
+                location.reload();
+            } else {
+                alert('Erreur lors de l\'ajout du film');
+            }
+        }).catch(error => {
+            console.error('Erreur:', error);
+        });
+    }
+
+    // Ajoutez un écouteur d'événements au bouton "Ajouter un film"
+    editMovieButtons.addEventListener('click', addMovie);
+
+    // Fonction pour modifier un film
+    function editMovie(movieId) {
+        // Remplacez cette URL par l'URL de votre API pour modifier un film
+        const url = `/main/${movieId}`;
+
+        // Récupérez les informations du formulaire d'édition de film
+        // Vous devrez adapter ces sélecteurs pour correspondre à votre formulaire d'édition de film
+        const title = document.querySelector(`#edit-title-${movieId}`).value;
+        const description = document.querySelector(`#edit-description-${movieId}`).value;
+        const releaseDate = document.querySelector(`#edit-releaseDate-${movieId}`).value;
+        const director = document.querySelector(`#edit-director-${movieId}`).value;
+
+        fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, description, releaseDate, director })
+        }).then(response => {
+            if (response.ok) {
+                alert('Film modifié');
+                location.reload();
+            } else {
+                alert('Erreur lors de la modification du film');
+            }
+        }).catch(error => {
+            console.error('Erreur:', error);
+        });
+    }
+
+    // Ajoutez des écouteurs d'événements aux boutons "Modifier un film"
+    editMovieButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const movieId = button.parentElement.parentElement.getAttribute('data-id');
+            editMovie(movieId);
+        });
+    });
+
+    // Fonction pour supprimer un film
+    function deleteMovie(movieId) {
+        // Remplacez cette URL par l'URL de votre API pour supprimer un film
+        const url = `/main/${movieId}`;
+
+        fetch(url, {
+            method: 'DELETE',
+        }).then(response => {
+            if (response.ok) {
+                alert('Film supprimé');
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression du film');
+            }
+        }).catch(error => {
+            console.error('Erreur:', error);
+        });
+    }
+
+    // Ajoutez des écouteurs d'événements aux boutons "Supprimer un film"
+    deleteMovieButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const movieId = button.parentElement.parentElement.getAttribute('data-id');
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce film ?')) {
+                deleteMovie(movieId);
+            }
+        });
+    });
 </script>
 </body>
 </html>

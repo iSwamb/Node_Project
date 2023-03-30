@@ -1,9 +1,8 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
-const User = require('./user');
 const Movie = require('./Movie');
-const { UserMovieFavorite } = require('./user');
+const { User, UserMovieFavorite } = require('./user');
 
 const models = {
     User: User.init(sequelize, Sequelize),
