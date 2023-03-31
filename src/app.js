@@ -35,7 +35,7 @@ app.use('/movies', isAuthenticated, movieRoutes);
 app.use('/main', isAuthenticated, async (req, res) => {
     try {
         const movies = await Film.findAll();
-        res.render('main', { user: req.user, movies: movies });
+        res.render('main', { user: JSON.stringify(req.user), movies: movies });
     } catch (error) {
         console.error(error);
         res.status(500).send('Une erreur est survenue lors de la récupération des films');

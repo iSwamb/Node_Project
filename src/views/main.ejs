@@ -43,34 +43,28 @@
 
 <% if (user && user.isAdmin) { %>
     <h2>Ajouter un film</h2>
-    <form id="add-movie-form">
-        <label for="title">Titre :</label>
-        <input type="text" id="title" name="title" required>
-        <br>
-        <label for="description">Description :</label>
-        <textarea id="description" name="description" required></textarea>
-        <br>
-        <label for="releaseDate">Date de sortie :</label>
-        <input type="date" id="releaseDate" name="releaseDate" required>
-        <br>
-        <label for="director">Réalisateur :</label>
-        <input type="text" id="director" name="director" required>
-        <br>
-        <button type="submit">Ajouter</button>
+    <form id="addMovieForm">
+        <input type="hidden" name="userId" value="<%= user.id %>">
+        <input type="text" name="title" placeholder="Titre">
+        <input type="text" name="description" placeholder="Description">
+        <input type="date" name="releaseDate" placeholder="Date de sortie">
+        <input type="text" name="director" placeholder="Réalisateur">
+        <button type="submit">Ajouter un film</button>
     </form>
+
 <% } %>
 
 <script>
     // Sélectionnez tous les boutons et stockez-les dans des variables
     const addToFavoritesButtons = document.querySelectorAll('.add-to-favorites');
     const removeFromFavoritesButtons = document.querySelectorAll('.remove-from-favorites');
+    const addMovieButton = document.querySelector('.add-movie');
     const editMovieButtons = document.querySelectorAll('.edit-movie');
     const deleteMovieButtons = document.querySelectorAll('.delete-movie');
 
     // Fonction pour ajouter un film aux favoris
     function addToFavorites(movieId) {
-        // Remplacez cette URL par l'URL de votre API pour ajouter un film aux favoris
-        const url = `/main/favorites/${movieId}`;
+        const url = `/users/${user.id}/favorites`;
 
         fetch(url, {
             method: 'POST',
@@ -85,82 +79,101 @@
             } else {
                 alert('Erreur lors de l\'ajout du film aux favoris');
             }
-        }).catch(error => {
-            console.error('Erreur:', error);
         });
     }
 
-    // Ajoutez des écouteurs d'événements aux boutons "Ajouter aux favoris"
+    // Fonction pour retirer un film des favoris
+    function removeFromFavorites(movieId) {
+        const url = `/users/${user.id}/favorites/${movieId}`;
+
+        fetch(url, {
+            method: 'DELETE'
+        }).then(response => {
+            console.log(response);
+            if (response.ok) {
+                alert('Film retiré des favoris');
+            } else {
+                alert('Erreur lors du retrait du film des favoris');
+            }
+        });
+    }
+
+    // Ajoutez des écouteurs d'événements pour les boutons Ajouter aux favoris et Retirer des favoris
     addToFavoritesButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const movieId = button.parentElement.parentElement.getAttribute('data-id');
+        button.addEventListener('click', (event) => {
+            const movieId = event.target.parentElement.parentElement.dataset.id;
             addToFavorites(movieId);
         });
     });
 
+    removeFromFavoritesButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const movieId = event.target.parentElement.parentElement.dataset.id;
+            removeFromFavorites(movieId);
+        });
+    });
+
     // Fonction pour ajouter un film
-    function addMovie() {
-        // Remplacez cette URL par l'URL de votre API pour ajouter un film
-        const url = `/main`;
+    async function addMovie(title, director, releaseDate) {
+        const url = `/movies`;
 
-        // Récupérez les informations du formulaire d'ajout de film
-        const title = document.querySelector('#title').value;
-        const description = document.querySelector('#description').value;
-        const releaseDate = document.querySelector('#releaseDate').value;
-        const director = document.querySelector('#director').value;
-
-        fetch(url, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ title, description, releaseDate, director })
-        }).then(response => {
-            if (response.ok) {
-                alert('Film ajouté');
-                location.reload();
-            } else {
-                alert('Erreur lors de l\'ajout du film');
-            }
-        }).catch(error => {
-            console.error('Erreur:', error);
+            body: JSON.stringify({ title, director, releaseDate })
         });
+
+        if (response.ok) {
+            alert('Film ajouté avec succès');
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'ajout du film');
+        }
     }
 
-    // Ajoutez un écouteur d'événements au bouton "Ajouter un film"
-    editMovieButtons.addEventListener('click', addMovie);
-
     // Fonction pour modifier un film
-    function editMovie(movieId) {
-        // Remplacez cette URL par l'URL de votre API pour modifier un film
-        const url = `/main/${movieId}`;
+    async function editMovie(movieId, title, director, releaseDate) {
+        const url = `/movies/${movieId}`;
 
-        // Récupérez les informations du formulaire d'édition de film
-        // Vous devrez adapter ces sélecteurs pour correspondre à votre formulaire d'édition de film
-        const title = document.querySelector(`#edit-title-${movieId}`).value;
-        const description = document.querySelector(`#edit-description-${movieId}`).value;
-        const releaseDate = document.querySelector(`#edit-releaseDate-${movieId}`).value;
-        const director = document.querySelector(`#edit-director-${movieId}`).value;
-
-        fetch(url, {
+        const response = await fetch(url, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ title, description, releaseDate, director })
-        }).then(response => {
-            if (response.ok) {
-                alert('Film modifié');
-                location.reload();
-            } else {
-                alert('Erreur lors de la modification du film');
-            }
-        }).catch(error => {
-            console.error('Erreur:', error);
+            body: JSON.stringify({ title, director, releaseDate })
         });
+
+        if (response.ok) {
+            alert('Film modifié avec succès');
+            location.reload();
+        } else {
+            alert('Erreur lors de la modification du film');
+        }
     }
 
-    // Ajoutez des écouteurs d'événements aux boutons "Modifier un film"
+    // Fonction pour supprimer un film
+    async function deleteMovie(movieId) {
+        const url = `/movies/${movieId}`;
+
+        const response = await fetch(url, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('Film supprimé avec succès');
+            location.reload();
+        } else {
+            alert('Erreur lors de la suppression du film');
+        }
+    }
+
+    // Ajoutez des écouteurs d'événements pour les boutons Ajouter, Modifier et Supprimer
+    if (addMovieButton) {
+        addMovieButton.addEventListener('click', addMovie);
+    }
+
     editMovieButtons.forEach(button => {
         button.addEventListener('click', () => {
             const movieId = button.parentElement.parentElement.getAttribute('data-id');
@@ -168,34 +181,12 @@
         });
     });
 
-    // Fonction pour supprimer un film
-    function deleteMovie(movieId) {
-        // Remplacez cette URL par l'URL de votre API pour supprimer un film
-        const url = `/main/${movieId}`;
-
-        fetch(url, {
-            method: 'DELETE',
-        }).then(response => {
-            if (response.ok) {
-                alert('Film supprimé');
-                location.reload();
-            } else {
-                alert('Erreur lors de la suppression du film');
-            }
-        }).catch(error => {
-            console.error('Erreur:', error);
-        });
-    }
-
-    // Ajoutez des écouteurs d'événements aux boutons "Supprimer un film"
     deleteMovieButtons.forEach(button => {
         button.addEventListener('click', () => {
             const movieId = button.parentElement.parentElement.getAttribute('data-id');
-            if (confirm('Êtes-vous sûr de vouloir supprimer ce film ?')) {
-                deleteMovie(movieId);
-            }
+            deleteMovie(movieId);
         });
     });
-</script>
+    </script>
 </body>
 </html>
