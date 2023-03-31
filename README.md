@@ -21,7 +21,7 @@ DB_DATABASE=movie_database
 DB_HOST=localhost
 DB_PORT=3306
 
-    Créez la base de données MySQL correspondante (dump base "sql_db.sql")
+    Créez la base de données MySQL correspondante (dump base "sql_db.sql" dans le dossier "migrations")
     Lancez l'application : npm start
 
 Variables d'environnement
